@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>森野之谣</title>
+<style>
+:root{
+  --bg:#eef6ec;
+  --panel:#ffffff;
+  --ink:#22301f;
+  --ink2:#5b6f5c;
+  --ink3:#93a894;
+  --green:#3d7a4c;
+  --green-d:#2e5f3b;
+  --green-l:#6fae7c;
+  --green-p:#e3f2e2;
+  --green-p2:#f2faf1;
+  --line:#cfe4cf;
+  --radius:16px;
+  --shadow:0 6px 24px rgba(61,122,76,.10);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;}
+body{
+  overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 12% -5%,#e6f6e0 0%,transparent 45%),
+    radial-gradient(circle at 88% 105%,#d9eedb 0%,transparent 45%),
+    #eef6ec;
+  font-size:15px;
+  line-height:1.6;
+}
+#app{
+  max-width:780px;margin:0 auto;height:100%;
+  display:flex;flex-direction:column;
+  background:rgba(255,255,255,.62);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 0 70px rgba(61,122,76,.10);
+}
+
+/* ============ 顶栏 ============ */
+.topbar{
+  flex:0 0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  z-index:30;
+}
+.brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;letter-spacing:.5px;color:var(--green-d);}
+.brand .logo{
+  width:26px;height:26px;border-radius:9px;
+  background:linear-gradient(140deg,#c8ecc9,#8ecb96);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  box-shadow:0 3px 8px rgba(61,122,76,.22);
+}
+.hud{display:flex;align-items:center;gap:8px;}
+.hud-pill{
+  display:flex;align-items:center;gap:5px;
+  background:var(--green-p2);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:5px 11px;
+  font-size:12.5px;color:var(--green-d);font-weight:600;
+}
+.hud-pill b{font-size:13.5px;}
+.hud-pill .heart{color:#7ec48b;}
+
+/* ============ 主视图 ============ */
+#view{
+  flex:1 1 auto;overflow-y:auto;overflow-x:hidden;
+  padding:16px 16px 30px;
+  scroll-behavior:smooth;
+}
+#view::-webkit-scrollbar{width:6px;}
+#view::-webkit-scrollbar-thumb{background:#cfe4cf;border-radius:99px;}
+
+/* ============ 底部导航 ============ */
+.bottomnav{
+  flex:0 0 auto;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:4px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  z-index:30;
+}
+.navbtn{
+  border:none;background:transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:7px 2px;border-radius:12px;
+  font-family:inherit;font-size:11px;color:var(--ink3);
+  transition:.18s;
+}
+.navbtn .ni{font-size:18px;line-height:1;filter:grayscale(.5) opacity(.7);transition:.18s;}
+.navbtn.active{color:var(--green-d);background:var(--green-p);font-weight:700;}
+.navbtn.active .ni{filter:none;transform:translateY(-1px);}
+.navbtn:active{transform:scale(.95);}
+
+/* ============ 通用 ============ */
+.page-head{margin:4px 0 16px;}
+.page-head h1{margin:0;font-size:21px;letter-spacing:1px;color:var(--green-d);}
+.page-head p{margin:4px 0 0;font-size:12.5px;color:var(--ink3);letter-spacing:.6px;}
+.btn{
+  font-family:inherit;font-size:13.5px;
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:12px;padding:9px 14px;cursor:pointer;
+  transition:.16s;
+}
+.btn:hover{background:var(--green-p);border-color:var(--green-l);}
+.btn:active{transform:scale(.97);}
+.btn.primary{background:var(--green);border-color:var(--green);color:#fff;}
+.btn.primary:hover{background:var(--green-d);}
+.btn.danger{color:#a34a4a;border-color:#e8cccc;}
+.btn.danger:hover{background:#fbecec;}
+.btn.ghost{background:transparent;}
+
+/* ============ 目录 ============ */
+.chapter-list{display:flex;flex-direction:column;gap:11px;}
+.chapter-card{
+  display:flex;align-items:center;gap:14px;
+  background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px;cursor:pointer;transition:.2s;
+  box-shadow:0 2px 10px rgba(61,122,76,.05);
+}
+.chapter-card:hover{transform:translateY(-2px);box-shadow:var(--shadow);border-color:var(--green-l);}
+.chapter-card.locked{opacity:.5;cursor:not-allowed;}
+.chapter-card.locked:hover{transform:none;box-shadow:none;}
+.ch-order{
+  flex:0 0 auto;width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(140deg,#e6f6e4,#c9e7cc);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:var(--green-d);font-size:15px;letter-spacing:.5px;
+}
+.ch-info{flex:1;min-width:0;}
+.ch-info h3{margin:0;font-size:15.5px;color:var(--ink);letter-spacing:.4px;}
+.ch-info p{margin:2px 0 0;font-size:12.5px;color:var(--ink3);}
+.ch-badge{
+  flex:0 0 auto;font-size:11.5px;font-weight:700;
+  padding:4px 10px;border-radius:999px;
+  background:var(--green-p2);color:var(--green);border:1px solid var(--line);
+}
+.chapter-card.locked .ch-badge{background:#f2f2f2;color:#aaa;border-color:#e5e5e5;}
+
+/* ============ 阅读器 ============ */
+.reader{display:flex;flex-direction:column;min-height:100%;}
+.reader-head{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;margin:-4px -4px 14px;
+  background:rgba(255,255,255,.75);
+  border:1px solid var(--line);border-radius:14px;
+  position:sticky;top:-16px;z-index:12;
+  backdrop-filter:blur(10px);
+}
+.rh-mid{flex:1;min-width:0;text-align:center;}
+.rh-title{font-size:14px;font-weight:700;color:var(--green-d);letter-spacing:.6px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rh-sub{font-size:11px;color:var(--ink3);letter-spacing:.4px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.iconbtn{
+  flex:0 0 auto;width:34px;height:34px;border-radius:11px;
+  border:1px solid var(--line);background:#fff;color:var(--ink2);
+  font-size:15px;cursor:pointer;transition:.16s;font-family:inherit;
+  display:flex;align-items:center;justify-content:center;
+}
+.iconbtn:hover{background:var(--green-p);color:var(--green-d);border-color:var(--green-l);}
+.iconbtn:active{transform:scale(.92);}
+
+.log{display:flex;flex-direction:column;gap:2px;padding-bottom:8px;}
+.line{
+  padding:7px 0 7px 13px;margin-bottom:6px;
+  border-left:2px solid transparent;
+  border-radius:0 10px 10px 0;
+}
+.line.appear{animation:lineIn .38s cubic-bezier(.22,.9,.3,1) both;}
+@keyframes lineIn{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.line .who{
+  font-size:11.5px;font-weight:800;letter-spacing:1px;
+  margin-bottom:3px;opacity:.95;
+}
+.line .txt{font-size:15.5px;line-height:1.9;color:var(--ink);}
+.line.narr{padding-left:13px;border-left-color:#e0ece0;}
+.line.narr .txt{color:#63776a;font-style:italic;font-size:14.8px;}
+.line.clover{border-left-color:#9ed3a7;background:linear-gradient(90deg,rgba(227,242,226,.55),transparent 70%);}
+.line.clover .who{color:#3d7a4c;}
+.line.you{border-left-color:#a9c9e6;background:linear-gradient(90deg,rgba(226,238,250,.5),transparent 70%);}
+.line.you .who{color:#46779f;}
+.line.sera{border-left-color:#c5b6e3;background:linear-gradient(90deg,rgba(238,232,250,.5),transparent 70%);}
+.line.sera .who{color:#7d6bb0;}
+.line.other .who{color:#8a8a8a;}
+
+.choice-area{margin-top:6px;}
+.prompt{
+  font-size:12.5px;color:var(--ink3);letter-spacing:.8px;
+  margin:6px 0 10px;padding-left:4px;
+}
+.choice-btn{
+  display:block;width:100%;text-align:left;
+  font-family:inherit;font-size:15px;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;margin-bottom:10px;cursor:pointer;
+  transition:.18s;position:relative;padding-left:42px;line-height:1.6;
+  box-shadow:0 2px 8px rgba(61,122,76,.04);
+}
+.choice-btn::before{
+  content:"◆";position:absolute;left:17px;top:50%;transform:translateY(-50%);
+  font-size:10px;color:#b8d8bd;transition:.18s;
+}
+.choice-btn:hover{
+  background:var(--green-p2);border-color:var(--green-l);
+  transform:translateX(4px);box-shadow:var(--shadow);
+}
+.choice-btn:hover::before{color:var(--green);transform:translateY(-50%) rotate(45deg);}
+.choice-btn:active{transform:translateX(2px) scale(.99);}
+
+.tap-hint{
+  text-align:center;font-size:12px;color:#a9bfae;
+  letter-spacing:2px;padding:14px 0 4px;
+  animation:hintPulse 2s ease-in-out infinite;
+}
+@keyframes hintPulse{0%,100%{opacity:.45;}50%{opacity:1;}}
+
+.ending-card{
+  margin-top:10px;padding:22px 20px;text-align:center;
+  background:linear-gradient(160deg,#f4fbf3,#e2f2e1);
+  border:1px solid #c4e2c6;border-radius:18px;
+  box-shadow:var(--shadow);
+  animation:lineIn .5s cubic-bezier(.22,.9,.3,1) both;
+}
+.ending-card .ec-tag{font-size:11px;letter-spacing:3px;color:#8db094;font-weight:700;}
+.ending-card .ec-title{
+  font-size:20px;font-weight:800;color:var(--green-d);
+  margin:8px 0 10px;letter-spacing:2px;
+}
+.ending-card .ec-desc{font-size:13.5px;color:#5f7563;line-height:1.9;margin-bottom:16px;}
+.ending-card .btn{margin:0 4px;}
+
+/* ============ 互动 ============ */
+.stage{
+  display:flex;flex-direction:column;align-items:center;
+  padding:20px 0 14px;
+  border-radius:20px;
+  background:linear-gradient(180deg,rgba(240,250,238,.9),rgba(255,255,255,0));
+  margin-bottom:14px;
+  position:relative;overflow:hidden;
+}
+.stage::before{
+  content:"";position:absolute;inset:-40% -20% auto -20%;height:200px;
+  background:radial-gradient(ellipse at center,rgba(174,224,180,.35),transparent 70%);
+  pointer-events:none;
+}
+.portrait{
+  width:118px;height:118px;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,#f0fdf0,#bfe4c3 62%,#a5d6ab);
+  border:3px solid #d3ecd4;
+  display:flex;align-items:center;justify-content:center;
+  font-size:52px;
+  box-shadow:0 12px 32px rgba(61,122,76,.20),inset 0 -10px 22px rgba(61,122,76,.08);
+  animation:breathe 4.5s ease-in-out infinite;
+  position:relative;z-index:1;
+}
+@keyframes breathe{
+  0%,100%{transform:translateY(0) scale(1);}
+  50%{transform:translateY(-6px) scale(1.02);}
+}
+.portrait-name{
+  margin-top:12px;font-size:16px;font-weight:800;letter-spacing:3px;
+  color:var(--green-d);position:relative;z-index:1;
+}
+.portrait-mood{
+  margin-top:3px;font-size:11.5px;color:#8fae95;letter-spacing:1.2px;
+  position:relative;z-index:1;
+}
+
+.bubble-wrap{min-height:70px;margin-bottom:14px;}
+.bubble{
+  background:#fff;border:1px solid var(--line);
+  border-radius:16px 16px 16px 5px;
+  padding:13px 16px;margin-bottom:9px;
+  font-size:15px;line-height:1.85;color:var(--ink);
+  box-shadow:0 3px 12px rgba(61,122,76,.06);
+  animation:lineIn .34s cubic-bezier(.22,.9,.3,1) both;
+  max-width:92%;
+}
+.bubble .b-who{
+  font-size:11.5px;font-weight:800;color:var(--green);letter-spacing:1px;margin-bottom:4px;
+}
+.bubble.me{
+  margin-left:auto;background:linear-gradient(140deg,#eef6fe,#e2eefb);
+  border-color:#cfe0f2;border-radius:16px 16px 5px 16px;color:#2f5170;
+}
+.bubble.me .b-who{color:#5b87b5;}
+.bubble-hint{
+  text-align:center;font-size:11.5px;color:#a9bfae;letter-spacing:2px;
+  padding:4px 0;animation:hintPulse 2s ease-in-out infinite;
+}
+
+.topic-title{
+  font-size:12px;letter-spacing:2px;color:var(--ink3);
+  margin:16px 0 10px;padding-left:2px;font-weight:700;
+}
+.topic-grid{display:flex;flex-direction:column;gap:9px;}
+.topic-btn{
+  font-family:inherit;text-align:left;
+  background:#fff;border:1px solid var(--line);border-radius:13px;
+  padding:12px 15px;font-size:14px;color:var(--ink);cursor:pointer;
+  transition:.16s;display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.topic-btn:hover{background:var(--green-p2);border-color:var(--green-l);transform:translateX(3px);}
+.topic-btn:active{transform:translateX(1px) scale(.99);}
+.topic-btn .tb-txt{flex:1;min-width:0;}
+.topic-btn .tb-tag{
+  flex:0 0 auto;font-size:10.5px;padding:2px 8px;border-radius:999px;
+  background:#f0f7f0;color:#8db094;border:1px solid #dcebdd;font-weight:700;
+}
+.topic-btn.locked{opacity:.45;cursor:not-allowed;background:#fafcfa;}
+.topic-btn.locked:hover{transform:none;background:#fafcfa;border-color:var(--line);}
+.topic-btn.locked .tb-tag{background:#f2f2f2;color:#b9b9b9;border-color:#eaeaea;}
+
+/* ============ 档案 ============ */
+.subtabs{
+  display:flex;gap:6px;margin-bottom:16px;
+  background:#f2f8f2;border:1px solid var(--line);
+  padding:4px;border-radius:14px;
+}
+.subtab{
+  flex:1;font-family:inherit;font-size:12.5px;
+  border:none;background:transparent;color:var(--ink3);
+  padding:8px 4px;border-radius:11px;cursor:pointer;transition:.16s;font-weight:600;
+}
+.subtab.active{background:#fff;color:var(--green-d);box-shadow:0 2px 8px rgba(61,122,76,.10);}
+
+.archive-item{
+  background:#fff;border:1px solid var(--line);border-radius:15px;
+  padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.18s;
+  box-shadow:0 2px 8px rgba(61,122,76,.04);
+}
+.archive-item:hover{border-color:var(--green-l);box-shadow:var(--shadow);}
+.archive-item.locked{opacity:.5;cursor:not-allowed;background:#fafcfa;}
+.archive-item.locked:hover{box-shadow:none;border-color:var(--line);}
+.ai-head{display:flex;align-items:center;gap:10px;}
+.ai-avatar{
+  flex:0 0 auto;width:34px;height:34px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  background:linear-gradient(140deg,#e6f6e4,#c9e7cc);
+}
+.archive-item.locked .ai-avatar{background:#f0f0f0;filter:grayscale(1);}
+.ai-name{font-size:14.5px;font-weight:700;color:var(--ink);letter-spacing:.4px;}
+.ai-sub{font-size:11.5px;color:var(--ink3);letter-spacing:.3px;margin-top:1px;}
+.ai-body{
+  margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+  font-size:13.8px;line-height:1.95;color:#4f6554;
+  white-space:pre-wrap;animation:lineIn .3s ease both;
+}
+.ai-arrow{flex:0 0 auto;color:#c3d8c5;font-size:12px;transition:.2s;}
+.archive-item.open .ai-arrow{transform:rotate(90deg);color:var(--green);}
+
+.task-item{
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  padding:13px 15px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;
+}
+.task-item.done{opacity:.55;}
+.task-check{
+  flex:0 0 auto;width:20px;height:20px;border-radius:7px;
+  border:1.5px solid #c8dcc9;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;margin-top:1px;
+}
+.task-item.done .task-check{background:var(--green-l);border-color:var(--green-l);}
+.task-txt h4{margin:0;font-size:14px;color:var(--ink);font-weight:700;}
+.task-txt p{margin:3px 0 0;font-size:12.5px;color:var(--ink3);line-height:1.7;}
+.task-item.done .task-txt h4{text-decoration:line-through;}
+
+.empty{
+  text-align:center;padding:44px 20px;color:#a7bda9;font-size:13px;letter-spacing:1px;
+}
+.empty .ei{font-size:34px;display:block;margin-bottom:10px;opacity:.6;}
+
+/* ============ 结局 ============ */
+.ending-item{
+  background:#fff;border:1px solid var(--line);border-radius:15px;
+  padding:15px 16px;margin-bottom:10px;display:flex;gap:12px;align-items:center;
+  transition:.18s;
+}
+.ending-item.got{
+  background:linear-gradient(140deg,#f5fbf4,#e8f5e7);
+  border-color:#c4e2c6;box-shadow:0 3px 12px rgba(61,122,76,.08);
+}
+.ending-item.lock{opacity:.55;}
+.ee-icon{
+  flex:0 0 auto;width:40px;height:40px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  background:#f2f8f2;border:1px solid var(--line);
+}
+.ending-item.got .ee-icon{background:linear-gradient(140deg,#d8f0d9,#b5dfb9);border-color:#a8d6ad;}
+.ee-info h4{margin:0;font-size:14.5px;font-weight:700;letter-spacing:.5px;color:var(--ink);}
+.ee-info p{margin:3px 0 0;font-size:12.3px;color:var(--ink3);line-height:1.7;}
+.progress-ring{
+  display:flex;align-items:center;gap:12px;
+  background:#fff;border:1px solid var(--line);border-radius:15px;
+  padding:14px 16px;margin-bottom:16px;
+}
+.pr-num{font-size:26px;font-weight:800;color:var(--green-d);letter-spacing:1px;}
+.pr-num small{font-size:13px;color:var(--ink3);font-weight:600;}
+.pr-bar{flex:1;height:8px;background:#eaf4ea;border-radius:99px;overflow:hidden;}
+.pr-bar i{display:block;height:100%;background:linear-gradient(90deg,#8ecb96,#4f8f5f);border-radius:99px;transition:.6s;}
+
+/* ============ 工坊 ============ */
+.workshop-box{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  padding:16px;margin-bottom:14px;
+}
+.workshop-box h3{
+  margin:0 0 4px;font-size:14.5px;color:var(--green-d);letter-spacing:.6px;
+  display:flex;align-items:center;gap:7px;
+}
+.workshop-box .hint{font-size:12px;color:var(--ink3);line-height:1.85;margin:0 0 12px;}
+textarea{
+  width:100%;min-height:190px;resize:vertical;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Courier New",monospace;
+  font-size:12.3px;line-height:1.7;color:#2c3a2d;
+  background:#f8fcf7;border:1px solid var(--line);border-radius:13px;
+  padding:12px 13px;outline:none;transition:.16s;
+}
+textarea:focus{border-color:var(--green-l);background:#fff;box-shadow:0 0 0 3px rgba(143,201,154,.18);}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.log-box{
+  margin-top:12px;font-size:12.2px;line-height:1.8;
+  background:#f7fbf6;border:1px dashed var(--line);border-radius:12px;
+  padding:11px 13px;color:#5b7260;max-height:170px;overflow-y:auto;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  white-space:pre-wrap;word-break:break-word;
+}
+.log-box:empty{display:none;}
+.log-box .ok{color:#3d7a4c;font-weight:700;}
+.log-box .err{color:#b05252;font-weight:700;}
+
+.chip-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;padding:5px 8px 5px 11px;border-radius:999px;
+  background:var(--green-p2);border:1px solid var(--line);color:var(--green-d);
+  font-weight:600;
+}
+.chip button{
+  border:none;background:transparent;cursor:pointer;color:#a8bfab;
+  font-size:14px;line-height:1;padding:0 2px;font-family:inherit;transition:.15s;
+}
+.chip button:hover{color:#b05252;}
+
+/* ============ 弹窗 ============ */
+.modal-mask{
+  position:fixed;inset:0;background:rgba(30,45,32,.34);
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;z-index:200;animation:fadeIn .22s ease both;
+}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.modal{
+  background:#fff;border-radius:20px;padding:24px 22px;
+  max-width:420px;width:100%;box-shadow:0 24px 60px rgba(20,40,25,.24);
+  animation:modalIn .3s cubic-bezier(.22,.9,.3,1) both;
+  border:1px solid #dcefdc;
+}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97);}to{opacity:1;transform:none;}}
+.modal h3{margin:0 0 8px;font-size:17px;color:var(--green-d);letter-spacing:1px;}
+.modal p{margin:0 0 18px;font-size:13.6px;line-height:1.9;color:#5b7260;white-space:pre-wrap;}
+.modal .btn-row{justify-content:flex-end;margin-top:0;}
+
+/* ============ Toast ============ */
+#toast{
+  position:fixed;left:50%;bottom:88px;transform:translateX(-50%) translateY(14px);
+  background:rgba(46,95,59,.93);color:#fff;
+  font-size:13px;padding:9px 18px;border-radius:999px;
+  opacity:0;pointer-events:none;transition:.3s;z-index:300;
+  letter-spacing:.6px;backdrop-filter:blur(6px);
+  box-shadow:0 8px 24px rgba(30,60,40,.24);
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* 数值飘字 */
+.float-num{
+  position:fixed;font-size:13px;font-weight:800;color:#4f9a5f;
+  pointer-events:none;z-index:400;
+  animation:floatUp 1.1s ease-out forwards;
+  text-shadow:0 1px 3px rgba(255,255,255,.9);
+}
+@keyframes floatUp{
+  0%{opacity:0;transform:translateY(6px) scale(.9);}
+  25%{opacity:1;transform:translateY(-4px) scale(1.05);}
+  100%{opacity:0;transform:translateY(-34px) scale(1);}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="logo">🍀</span>森野之谣</div>
+    <div class="hud">
+      <div class="hud-pill"><span class="heart">❦</span>好感 <b id="hud-aff">0</b></div>
+    </div>
+  </header>
+
+  <main id="view"></main>
+
+  <nav class="bottomnav">
+    <button class="navbtn active" data-tab="story"><span class="ni">📖</span>剧情</button>
+    <button class="navbtn" data-tab="interact"><span class="ni">🍀</span>互动</button>
+    <button class="navbtn" data-tab="archive"><span class="ni">🗂</span>档案</button>
+    <button class="navbtn" data-tab="ending"><span class="ni">✦</span>结局</button>
+    <button class="navbtn" data-tab="workshop"><span class="ni">🛠</span>工坊</button>
+  </nav>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+
+/* =========================================================
+   0. 基础工具
+   ========================================================= */
+const LS_CH = 'smy.chapters.v1';
+const LS_ST = 'smy.state.v1';
+const LS_INIT = 'smy.inited.v1';
+
+const esc = s => String(s == null ? '' : s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(()=>t.classList.remove('show'), 1700);
+}
+
+function floatNum(text, x, y){
+  const el = document.createElement('div');
+  el.className = 'float-num';
+  el.textContent = text;
+  el.style.left = (x||window.innerWidth/2) + 'px';
+  el.style.top = (y||window.innerHeight/2) + 'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 1150);
+}
+
+function modal(title, body, buttons){
+  const mask = document.createElement('div');
+  mask.className = 'modal-mask';
+  const box = document.createElement('div');
+  box.className = 'modal';
+  box.innerHTML = '<h3>'+esc(title)+'</h3><p>'+esc(body)+'</p>';
+  const row = document.createElement('div');
+  row.className = 'btn-row';
+  (buttons||[{text:'知道了'}]).forEach(b=>{
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + (b.cls||'');
+    btn.textContent = b.text;
+    btn.onclick = ()=>{ mask.remove(); if(b.fn) b.fn(); };
+    row.appendChild(btn);
+  });
+  box.appendChild(row);
+  mask.appendChild(box);
+  mask.onclick = e => { if(e.target === mask) mask.remove(); };
+  document.body.appendChild(mask);
+}
+
+/* =========================================================
+   1. 档案数据库
+   ========================================================= */
+const ARCHIVE_DB = {
+  /* ---- 人物 ---- */
+  p_clover: {
+    type:'person', icon:'🍀', name:'克洛薇尔', sub:'Clover · 四叶草的物灵',
+    body:'这片远古森林中唯一的物灵，人形，本体是一株再普通不过的四叶草。\n' +
+         '淡绿色的衣裙仿佛由叶片织成，赤足，走在苔藓上没有一点声音。\n\n' +
+         '她常年带着倦意，喜欢坐在巨大的四叶草叶片上晃腿，对森林之外的一切抱着懒洋洋的好奇。\n' +
+         '作为森林守护使，她的职责是维系这片林子与林中生灵的平衡——虽然大多数时候，她都在睡觉。\n\n' +
+         '「千年来，这片森林总要出一个物灵的。今年轮到我了。」'
+  },
+  p_you: {
+    type:'person', icon:'🌿', name:'你', sub:'误入森林的外来者',
+    body:'一个走进远古森林的普通人类女孩。\n' +
+         '你并不知道自己为什么能穿过那道凡人难以逾越的边界，也不知道这片林子为何对你格外宽容。\n\n' +
+         '在克洛薇尔眼中，你是一段「很久没有见过的、会呼吸的新鲜事」。'
+  },
+  p_sera: {
+    type:'person', icon:'❄', name:'赛拉菲娜', sub:'雪发精灵 · 森林的巡守',
+    body:'一头雪白长发的精灵，栖息在森林最高的树冠之间。\n' +
+         '她比克洛薇尔年长得多，说话简短、克制，像是怕多说一个字就会惊扰什么。\n\n' +
+         '她并非物灵，却是这片森林最古老的见证者之一。\n' +
+         '她照料着林中的秩序，也照料着这个过于年轻、过于贪睡的守护使。'
+  },
+  p_villager: {
+    type:'person', icon:'🏮', name:'酒馆老板娘', sub:'森林边界村落的居民',
+    body:'森林边界外那座小村落里，唯一还亮着灯的小酒馆的主人。\n' +
+         '她的眼角有很深的纹路，说话时总带着一点疲惫的耐心。\n\n' +
+         '她告诉克洛薇尔：糖叶果，十几年前就绝了。\n' +
+         '「这片地，早就种不出东西了。」'
+  },
+  /* ---- 设定 ---- */
+  s_wuling: {
+    type:'setting', icon:'✧', name:'物灵', sub:'千年的约定',
+    body:'在这片大陆上，千年来总要出一个物灵。\n\n' +
+         '一片森林、一条河流、一座山峦，若长久地被人遗忘，便会在某个清晨凝结出一个「物灵」——\n' +
+         '拥有形体，拥有声音，拥有与那片土地同频的呼吸。\n\n' +
+         '物灵不会老去，不会自然死亡。但只要那片土地枯萎，物灵便会随之消散。\n' +
+         '没人知道这条规则是谁定下的，也没人知道它是否会改变。'
+  },
+  s_guardian: {
+    type:'setting', icon:'🛡', name:'森林守护使', sub:'克洛薇尔的使命',
+    body:'远古森林中唯一的物灵，便自动成为森林守护使。\n\n' +
+         '职责包括但不限于：\n' +
+         '· 维系林中的平衡，防止外来者过度采集\n' +
+         '· 守护珍稀的植株与生灵\n' +
+         '· 在必要的时候离开森林，与人类交涉\n\n' +
+         '克洛薇尔对这份职责的态度是：尽力而为，能睡就睡。'
+  },
+  s_sugarleaf: {
+    type:'setting', icon:'🍃', name:'糖叶果', sub:'森林边缘的珍稀植株',
+    body:'生长在森林边缘与村落交界处的一种珍稀植株。\n\n' +
+         '它的叶片在夏末会分泌出一层薄薄的、带着甜味的结晶，是森林里许多小生灵过冬的口粮。\n' +
+         '因为人类的采摘与土地的贫瘠，糖叶果已经在这片区域绝迹。\n\n' +
+         '至少，村子里的老板娘是这么说的。'
+  },
+  s_time: {
+    type:'setting', icon:'⏳', name:'物灵的时间', sub:'片刻光阴，凡人几年',
+    body:'物灵对时间的感知与凡人完全不同。\n\n' +
+         '在克洛薇尔眼中，「上次出来偷玩」不过是前不久的事；\n' +
+         '而对村子而言，那已经是足以让一代人老去、让一座凉亭消失、让一尊石像被拆除的漫长岁月。\n\n' +
+         '这是物灵最温柔，也最残酷的地方。'
+  },
+  /* ---- 世界观 ---- */
+  w_continent: {
+    type:'world', icon:'🌍', name:'这片大陆', sub:'广袤而沉默',
+    body:'一片广袤的大陆。人类的聚落沿着河流与平原生长，而森林、山脉、沼泽则属于别的存在。\n\n' +
+         '人类与自然之间维持着一种脆弱的默契：互不侵犯，偶尔交易，更多时候是遗忘。\n\n' +
+         '在人类的史书里，物灵只是传说中的概念。'
+  },
+  w_forest: {
+    type:'world', icon:'🌳', name:'远古森林', sub:'「那个一直在的地方」',
+    body:'大陆上最古老的一片森林。树冠高得遮住天空，林间永远弥漫着浆果与泥土的气息。\n\n' +
+         '凡人很难走进它的深处——不是因为有屏障，而是因为森林本身会让人迷失方向。\n' +
+         '只有被它允许的人，才能抵达中心那片巨大的四叶草地。\n\n' +
+         '克洛薇尔说，她们管它叫「那个一直在的地方」。'
+  },
+  w_village: {
+    type:'world', icon:'🏘', name:'森林边界的村落', sub:'物是人非之地',
+    body:'紧贴着远古森林边缘的一座小村落。\n\n' +
+         '曾经有古朴的凉亭、石雕的勇者像、卖热糖糕的老婆婆。\n' +
+         '如今只剩下冷清的小店、被拆除的雕像、以及一片种不出东西的贫瘠土地。\n\n' +
+         '克洛薇尔记忆中的它，和眼前的它，中间隔了几十年。'
+  }
+};
+
+/* =========================================================
+   2. 结局数据库
+   ========================================================= */
+const ENDING_DB = {
+  e_unspoken: {
+    icon:'🍃', title:'结局 · 未说出口的话',
+    desc:'你劝她先回森林。她点了点头，一路上没有再说一句话。有些真相，需要更长的时间才能被说出口。'
+  },
+  e_lantern: {
+    icon:'🏮', title:'结局 · 村口的灯',
+    desc:'你们决定留下来查清楚。那天夜里，村口那盏快要熄灭的灯，重新被点亮了一小会儿。'
+  },
+  e_summer: {
+    icon:'🌿', title:'结局 · 陪你坐一会儿',
+    desc:'你什么都没说，只是在她身边坐了下来。森林的夏天很长，长到足够让一个人慢慢消化一场漫长的失去。'
+  }
+};
+
+/* =========================================================
+   3. 互动话题
+   ========================================================= */
+const TOPICS = [
+  { id:'q1', need:0, aff:1, name:'「你是什么时候醒来的？」', lines:[
+    {who:'克洛薇尔', text:'唔……大概是春天吧。'},
+    {who:'克洛薇尔', text:'那时候雨刚停，泥土是软的，第一缕阳光正好落在我那片叶子上。'},
+    {who:'克洛薇尔', text:'然后我就……睁开眼了。'},
+    {who:'克洛薇尔', text:'再然后我就发现自己有手有脚了。说实话，到现在还有点不习惯。'}
+  ]},
+  { id:'q2', need:0, aff:1, name:'「这片森林叫什么名字？」', lines:[
+    {who:'克洛薇尔', text:'名字？'},
+    {who:'克洛薇尔', text:'唔……人类好像管它叫「森野」来着。'},
+    {who:'克洛薇尔', text:'不过我们这边一般不这么叫。'},
+    {who:'克洛薇尔', text:'我们叫它——「那个一直在的地方」。'},
+    {who:'克洛薇尔', text:'……听起来有点笨，对吧。可是它确实一直在。'}
+  ]},
+  { id:'q3', need:2, aff:1, name:'「你平时都在做什么？」', lines:[
+    {who:'克洛薇尔', text:'睡觉。'},
+    {who:'克洛薇尔', text:'……好吧，除了睡觉。'},
+    {who:'克洛薇尔', text:'我会沿着林子走一圈，看看有没有树生病了，有没有小动物掉进坑里。'},
+    {who:'克洛薇尔', text:'有时候会跟松鼠吵架。它们总是偷我叶子上的露水。'},
+    {who:'克洛薇尔', text:'……你笑什么。这很重要的。'}
+  ]},
+  { id:'q4', need:4, aff:2, name:'「赛拉菲娜是个什么样的人？」', lines:[
+    {who:'克洛薇尔', text:'她啊……'},
+    {who:'克洛薇尔', text:'很凶。'},
+    {who:'克洛薇尔', text:'……但她其实很好。'},
+    {who:'克洛薇尔', text:'我刚醒来的那阵子，什么都不懂，连走路都会摔。是她一直在旁边看着。'},
+    {who:'克洛薇尔', text:'她从来不说「你做得很好」，但她会在我睡着的时候，帮我盖上一片大叶子。'},
+    {who:'克洛薇尔', text:'……喂，这个别告诉她。'}
+  ]},
+  { id:'q5', need:6, aff:2, name:'「森林外面是什么样的？」', lines:[
+    {who:'克洛薇尔', text:'外面啊……'},
+    {who:'克洛薇尔', text:'有很多我没见过的东西。会冒烟的石头房子，会跑的铁盒子，还有很吵很吵的人。'},
+    {who:'克洛薇尔', text:'我偷偷去过几次。'},
+    {who:'克洛薇尔', text:'有一次吃到了一种热的、甜的、软软的东西。老婆婆说那叫糖糕。'},
+    {who:'克洛薇尔', text:'……现在想起来还是很好吃。'},
+    {who:'克洛薇尔', text:'不过后来我再去的时候，那个摊子就不见了。'}
+  ]},
+  { id:'q6', need:9, aff:2, name:'「物灵会感到孤独吗？」', lines:[
+    {who:'克洛薇尔', text:'……'},
+    {who:'克洛薇尔', text:'这个问题有点难。'},
+    {who:'克洛薇尔', text:'整片森林只有我一个物灵。'},
+    {who:'克洛薇尔', text:'树会说话，风会说话，松鼠也会说话。可是它们说的都是同一件事——春天来了，秋天来了，冬天来了。'},
+    {who:'克洛薇尔', text:'没有人问我「你今天过得怎么样」。'},
+    {who:'克洛薇尔', text:'……所以我大概是孤独的吧。'},
+    {who:'克洛薇尔', text:'不过现在有人问了。'},
+    {who:'克洛薇尔', text:'所以好像也没那么孤独了。'}
+  ]},
+  { id:'q7', need:12, aff:2, name:'「我可以一直来找你吗？」', lines:[
+    {who:'克洛薇尔', text:'……'},
+    {who:'克洛薇尔', text:'你知道的，我睡一觉可能就是好几年。'},
+    {who:'克洛薇尔', text:'等你再来的时候，可能已经……'},
+    {who:'克洛薇尔', text:'……'},
+    {who:'克洛薇尔', text:'算了。'},
+    {who:'克洛薇尔', text:'来吧。'},
+    {who:'克洛薇尔', text:'我会努力少睡一点的。'},
+    {who:'克洛薇尔', text:'……真的，我努力。'}
+  ]}
+];
+
+/* =========================================================
+   4. 内置章节
+   ========================================================= */
+const BUILTIN_CH1 = {
+  id: 'ch1',
+  order: 1,
+  title: '一序 · 章一',
+  subtitle: '永不凋谢的夏',
+  unlockAfter: null,
+  start: 'start',
+  nodes: {
+
+    /* ---------- 开场 ---------- */
+    start: {
+      type:'scene',
+      onEnter:{ archive:['w_forest','w_continent','p_you'],
+                taskAdd:[{id:'t1', title:'在森林中找到一个可以喘息的地方', desc:'你走进了这片凡人难以进入的远古森林。'}] },
+      lines:[
+        {text:'树荫在绿地上投下一片影子，叶片的缝隙间透出了几缕层层叠叠的金色光束，光束中尘埃飘动。'},
+        {text:'一只松鼠奔跑过这片洒满阳光的绿荫，忽地停了脚步，动了动鼻子轻嗅着。空气中被微风带过一阵清新的浆果香，还参着一丝暖洋洋的、被阳光曝晒过的泥土气息。'},
+        {text:'故事开始在这片生机勃勃的森林，与这个永不凋谢的夏。'},
+        {text:'你踩着厚厚的苔藓往深处走，脚下的落叶发出细微的声响。头顶的绿冠遮住了大半片天空，光线被筛成碎金。'},
+        {who:'你', text:'……好安静。安静得能听见自己的心跳。'}
+      ],
+      next:'meet'
+    },
+
+    /* ---------- 初遇 ---------- */
+    meet: {
+      type:'scene',
+      onEnter:{ archive:['p_clover'], taskDone:['t1'],
+                taskAdd:[{id:'t2', title:'与森林中的少女交谈', desc:'坐在巨大四叶草上的少女，正看着你。'}] },
+      lines:[
+        {text:'林间忽然亮了一块——那是一株比人还高的四叶草，叶片宽大得像一张床。'},
+        {text:'一个少女正坐在那片叶子上，双腿悬空轻轻摇晃。她穿着仿佛由叶子织成的淡绿色衣裳，浅金色的光落在她的发梢。'},
+        {who:'克洛薇尔', text:'唔……'},
+        {text:'她打了个哈欠，慢吞吞地抬起眼。'},
+        {who:'克洛薇尔', text:'人类？'},
+        {who:'克洛薇尔', text:'好久没见过了……你为什么会走到这种地方来？这片林子，凡人一般进不来的。'}
+      ],
+      next:'ask1'
+    },
+
+    ask1: {
+      type:'choice',
+      prompt:'你要怎么回答她？',
+      options:[
+        { text:'「我在找一个能让我安静下来的地方。」', next:'reply_a', aff:2, flag:'honest' },
+        { text:'「我……好像是迷路了。」', next:'reply_b', aff:1, flag:'lost' },
+        { text:'「你是谁？这里又是什么地方？」', next:'reply_c', aff:1, flag:'curious' }
+      ]
+    },
+
+    reply_a: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'……安静的地方。'},
+        {text:'她歪了歪头，像是在咀嚼这几个字。'},
+        {who:'克洛薇尔', text:'那你找对地方了。这里最不缺的就是安静。'},
+        {text:'她晃了晃腿，语气软下来了一点。'},
+        {who:'克洛薇尔', text:'我叫克洛薇尔。这片森林的守护使。'}
+      ],
+      next:'explain'
+    },
+
+    reply_b: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'迷路？'},
+        {who:'克洛薇尔', text:'唔……这片林子对人类来说确实像个迷宫。'},
+        {who:'克洛薇尔', text:'不过你运气不错，遇上了我。'},
+        {text:'她跳下叶片，赤着的脚落在苔藓上，一点声音也没有。'},
+        {who:'克洛薇尔', text:'我是克洛薇尔，这片森林的守护使。'}
+      ],
+      next:'explain'
+    },
+
+    reply_c: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'我？'},
+        {text:'她愣了一下，指了指自己，好像很少被人这样问。'},
+        {who:'克洛薇尔', text:'我是克洛薇尔，这片森林的守护使。'},
+        {who:'克洛薇尔', text:'至于这里……是大陆上最古老的一片林子。'},
+        {text:'她顿了顿，又补了一句。'},
+        {who:'克洛薇尔', text:'……也是最安静的一片。'}
+      ],
+      next:'explain'
+    },
+
+    explain: {
+      type:'scene',
+      onEnter:{ archive:['s_wuling','s_guardian','s_time'], taskDone:['t2'] },
+      lines:[
+        {who:'克洛薇尔', text:'简单来说，我不是人类。我是一株四叶草。'},
+        {text:'她说得轻描淡写，仿佛在说今天的天气。'},
+        {who:'克洛薇尔', text:'千年来，这片森林总要出一个物灵。今年轮到我了。'},
+        {who:'克洛薇尔', text:'……说是这么说，可我大多数时候都在睡觉。'},
+        {text:'她伸了个懒腰，叶子做的衣袖滑下去一截。'}
+      ],
+      next:'sera'
+    },
+
+    /* ---------- 赛拉菲娜登场 ---------- */
+    sera: {
+      type:'scene',
+      onEnter:{ archive:['p_sera','s_sugarleaf'],
+                taskAdd:[{id:'t3', title:'前往村落取回糖叶果的原材料', desc:'森林边缘的糖叶果被人类摘走了十七株。'}] },
+      lines:[
+        {text:'一阵凉意从林冠上落下来。'},
+        {text:'雪一样的发丝垂在你眼前，一位白衣精灵无声地立在枝桠上，像是本来就长在那里。'},
+        {who:'赛拉菲娜', text:'克洛薇尔。'},
+        {who:'克洛薇尔', text:'……啊。'},
+        {text:'少女的表情瞬间垮了下来。'},
+        {who:'赛拉菲娜', text:'森林边缘的糖叶果，被人类摘走了十七株。'},
+        {who:'赛拉菲娜', text:'你是守护使，不是林中的一缕闲风。'},
+        {who:'克洛薇尔', text:'……好吧，好吧。'},
+        {text:'她蹲下身，拨弄着一株袖珍的四叶草，长长叹了口气。'},
+        {who:'克洛薇尔', text:'我去就是了。'}
+      ],
+      next:'brief'
+    },
+
+    brief: {
+      type:'scene',
+      lines:[
+        {text:'赛拉菲娜的目光落到你身上，停了两秒。'},
+        {who:'赛拉菲娜', text:'……人类。'},
+        {who:'赛拉菲娜', text:'森林边界外有个村子。糖叶果原本生长在那里，需要有人取回重新种植的原材料。'},
+        {who:'克洛薇尔', text:'我一个人去就行。'},
+        {text:'她站起来，拍了拍裙摆上的草屑，然后转向你。'},
+        {who:'克洛薇尔', text:'……不过。'},
+        {who:'克洛薇尔', text:'你要跟来吗？'}
+      ],
+      next:'ask_follow'
+    },
+
+    ask_follow: {
+      type:'choice',
+      prompt:'你要怎么回答她？',
+      options:[
+        { text:'「我陪你一起去。」', next:'follow_a', aff:2, flag:'together' },
+        { text:'「你一个人真的没问题吗？」', next:'follow_b', aff:1, flag:'worried' },
+        { text:'「我可以帮你做点什么吗？」', next:'follow_c', aff:1, flag:'helpful' }
+      ]
+    },
+
+    follow_a: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'……哦。'},
+        {text:'她愣了一下，随即别开脸，耳尖有一点不明显的红。'},
+        {who:'克洛薇尔', text:'好。那就……一起。'},
+        {who:'克洛薇尔', text:'别拖我后腿啊。'}
+      ],
+      next:'depart'
+    },
+
+    follow_b: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'当然没问题。'},
+        {text:'她挺了挺胸，努力做出一副可靠的样子。'},
+        {who:'克洛薇尔', text:'我可是守护使。'},
+        {text:'……然后她打了个哈欠，气势瞬间没了。'},
+        {who:'克洛薇尔', text:'……好吧，可能有点问题。'},
+        {who:'克洛薇尔', text:'那你来吧。'}
+      ],
+      next:'depart'
+    },
+
+    follow_c: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'帮忙？'},
+        {text:'她眨了眨眼，像是在认真考虑这个提议。'},
+        {who:'克洛薇尔', text:'……那你就负责别让我在半路上睡着。'},
+        {who:'克洛薇尔', text:'这挺难的。真的。'}
+      ],
+      next:'depart'
+    },
+
+    /* ---------- 出发 ---------- */
+    depart: {
+      type:'scene',
+      onEnter:{ taskDone:['t3'],
+                taskAdd:[{id:'t4', title:'穿过森林，抵达边界的村落', desc:'她走得很快，偶尔会停下来碰一碰路边的树干。'}] },
+      lines:[
+        {text:'克洛薇尔从叶片上跳下来，脚尖点地的一瞬间，草叶上泛起一圈极淡的绿光。'},
+        {who:'克洛薇尔', text:'走吧。趁我还没反悔。'},
+        {text:'你们穿过整片森林。她走得很快，偶尔会停下来，伸手碰一碰路边的树干，像是在和谁打招呼。'},
+        {text:'阳光穿过树冠，在她身上落下一片一片流动的光斑。'},
+        {who:'克洛薇尔', text:'……说起来，你叫什么？'},
+        {text:'她忽然回头，眼睛里有种不太好意思的认真。'},
+        {who:'克洛薇尔', text:'我一直没问。'}
+      ],
+      next:'village_edge'
+    },
+
+    /* ---------- 村落 ---------- */
+    village_edge: {
+      type:'scene',
+      onEnter:{ archive:['w_village'],
+                taskDone:['t4'],
+                taskAdd:[{id:'t5', title:'在村落中寻找糖叶果的线索', desc:'往日的凉亭早已不复存在。'}] },
+      lines:[
+        {text:'树影渐渐稀疏，脚下的苔藓变成了被踩得发白的土路。'},
+        {text:'克洛薇尔忽然停住了。'},
+        {who:'克洛薇尔', text:'……咦。'},
+        {text:'前方是一小片村落的轮廓。低矮的屋顶，安静的街巷，几盏还没点起来的灯。'},
+        {who:'克洛薇尔', text:'不对。这里以前……有一座凉亭的。'},
+        {text:'她往前走了两步，又停下，眉头慢慢皱了起来。'},
+        {who:'克洛薇尔', text:'那个石雕的勇者像呢？上次我偷偷跑出来的时候，它还在广场上，被人擦得亮亮的。'}
+      ],
+      next:'ask_memory'
+    },
+
+    ask_memory: {
+      type:'choice',
+      prompt:'你要说什么？',
+      options:[
+        { text:'「你上次来，是什么时候？」', next:'reveal', aff:1, flag:'asked_time' },
+        { text:'「这里看起来，已经荒废很久了。」', next:'reveal_b', aff:0, flag:'blunt' },
+        { text:'（沉默地站在她身后。）', next:'reveal_c', aff:1, flag:'quiet' }
+      ]
+    },
+
+    reveal: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'……我也不记得了。'},
+        {who:'克洛薇尔', text:'上次溜出来的时候，天气很好。'},
+        {who:'克洛薇尔', text:'卖糖糕的老婆婆还给了我一块，热的。她说我看起来太瘦了。'},
+        {text:'她顿了顿。'},
+        {who:'克洛薇尔', text:'也就……过了一会儿吧？'}
+      ],
+      next:'reveal_end'
+    },
+
+    reveal_b: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'……很久？'},
+        {text:'她转过头看你，像是没听懂这两个字。'},
+        {who:'克洛薇尔', text:'可我记得清清楚楚啊。'},
+        {who:'克洛薇尔', text:'凉亭的木头是深褐色的，勇者像的剑尖朝着东边。'},
+        {who:'克洛薇尔', text:'我明明……只是睡了一觉而已。'}
+      ],
+      next:'reveal_end'
+    },
+
+    reveal_c: {
+      type:'scene',
+      lines:[
+        {text:'你什么也没说，只是站在她身后一步远的地方。'},
+        {text:'克洛薇尔没有回头。她站在那里，看了很久很久。'},
+        {who:'克洛薇尔', text:'……'},
+        {who:'克洛薇尔', text:'谢谢。'},
+        {text:'声音很轻，几乎被风吹散了。'}
+      ],
+      next:'reveal_end'
+    },
+
+    reveal_end: {
+      type:'scene',
+      onEnter:{ taskDone:['t5'] },
+      lines:[
+        {text:'你想起村口那块石碑。'},
+        {text:'石碑上刻着这座村子建立的年份，字迹已经磨损得看不清楚了。'},
+        {text:'但那上面的数字，比这座村子里所有人的年龄加起来还要久。'},
+        {text:'——物灵眼中的片刻光阴，便是凡人的几年。'},
+        {text:'克洛薇尔看着你，像是想从你脸上找到某个答案。'}
+      ],
+      next:'tavern'
+    },
+
+    /* ---------- 酒馆 ---------- */
+    tavern: {
+      type:'scene',
+      onEnter:{ archive:['p_villager'],
+                taskAdd:[{id:'t6', title:'向酒馆老板娘打听糖叶果', desc:'昏黄的灯，木头的味道。'}] },
+      lines:[
+        {text:'克洛薇尔在村口站了很久，最后什么也没说，转身走进了一家小酒馆。'},
+        {text:'酒馆里人不多。昏黄的灯，木头的味道，柜台被磨得发亮。'},
+        {who:'克洛薇尔', text:'打扰一下。'},
+        {text:'她走到柜台前，声音比在森林里轻得多。'},
+        {who:'克洛薇尔', text:'请问……糖叶果，你们这里还有吗？'},
+        {text:'老板娘抬起头，打量了她一眼，又看了看你。'},
+        {who:'酒馆老板娘', text:'糖叶果？'},
+        {who:'酒馆老板娘', text:'那东西早就不长啦。十几年前就绝了。'},
+        {who:'克洛薇尔', text:'……绝了？'},
+        {who:'酒馆老板娘', text:'你们是外地来的吧。'},
+        {text:'她擦着杯子，语气很平淡。'},
+        {who:'酒馆老板娘', text:'这片地，早就种不出东西了。'}
+      ],
+      next:'truth'
+    },
+
+    truth: {
+      type:'scene',
+      onEnter:{ taskDone:['t6'] },
+      lines:[
+        {text:'克洛薇尔站在原地，手指慢慢攥紧了衣角。'},
+        {text:'酒馆的木门在她身后一晃一晃，把外面的光切成一片一片。'},
+        {who:'克洛薇尔', text:'那……森林怎么办。'},
+        {text:'她的声音很小，几乎被酒馆的嘈杂盖过去。'},
+        {text:'你忽然意识到——'},
+        {text:'糖叶果是林中小生灵过冬的口粮。'},
+        {text:'如果它真的绝迹了，那片森林的冬天，会很难熬。'}
+      ],
+      next:'final_choice'
+    },
+
+    final_choice: {
+      type:'choice',
+      prompt:'她还在等你说话。',
+      options:[
+        { text:'「先回去。这件事得告诉赛拉菲娜。」', next:'route_a', aff:1, flag:'route_a' },
+        { text:'「别急。我们把这件事查清楚。」', next:'route_b', aff:2, flag:'route_b' },
+        { text:'「……我陪你坐一会儿。」', next:'route_c', aff:3, flag:'route_c' }
+      ]
+    },
+
+    /* ---------- 三条支线 ---------- */
+    route_a: {
+      type:'scene',
+      lines:[
+        {text:'你说完这句话，克洛薇尔沉默了几秒钟。'},
+        {who:'克洛薇尔', text:'……嗯。'},
+        {who:'克洛薇尔', text:'你说得对。这种事，得让她知道。'},
+        {text:'她转身往外走，脚步比来时快了很多。'},
+        {text:'走到门口时，她停了一下，回头看了一眼柜台。'},
+        {who:'克洛薇尔', text:'……那个糖糕，也是在这条街上买的。'}
+      ],
+      next:'end_a'
+    },
+
+    route_b: {
+      type:'scene',
+      lines:[
+        {who:'克洛薇尔', text:'查清楚？'},
+        {text:'她抬起头，眼睛里重新有了一点光。'},
+        {who:'克洛薇尔', text:'……怎么查？'},
+        {text:'你指了指酒馆里那些低声交谈的人。'},
+        {text:'于是你们在角落坐下来，要了两杯热的东西。'},
+        {text:'克洛薇尔小口小口地喝着，一边听一边点头，偶尔会问一些很笨的问题。'},
+        {who:'克洛薇尔', text:'……原来人类是这么过日子的。'}
+      ],
+      next:'end_b'
+    },
+
+    route_c: {
+      type:'scene',
+      lines:[
+        {text:'你没有再说任何关于森林、关于糖叶果的话。'},
+        {text:'你只是拉开她旁边的椅子，坐了下来。'},
+        {text:'克洛薇尔愣了一下。'},
+        {who:'克洛薇尔', text:'……你不劝我？'},
+        {text:'你摇了摇头。'},
+        {text:'她低下头，很久没有出声。'},
+        {text:'窗外，村子的灯一盏一盏亮了起来。'},
+        {who:'克洛薇尔', text:'……这里晚上的灯，比我记得的多。'}
+      ],
+      next:'end_c'
+    },
+
+    /* ---------- 结局 ---------- */
+    end_a: {
+      type:'ending',
+      endingId:'e_unspoken',
+      lines:[
+        {text:'你们连夜赶回森林。'},
+        {text:'一路上克洛薇尔几乎没有说话，只有踩过落叶的沙沙声跟在身后。'},
+        {text:'赛拉菲娜在森林边缘等着，白色的头发在月光下几乎是透明的。'},
+        {who:'赛拉菲娜', text:'……我知道了。'},
+        {text:'她只说了这四个字，然后转身走进了林子深处。'},
+        {text:'克洛薇尔站在原地，看着她的背影，很久很久。'},
+        {who:'克洛薇尔', text:'我是不是……醒得太晚了。'}
+      ]
+    },
+
+    end_b: {
+      type:'ending',
+      endingId:'e_lantern',
+      lines:[
+        {text:'你们在村子里待了下来。'},
+        {text:'克洛薇尔学着人类的样子和摊贩说话，学着数铜板，学着在别人问「你从哪来」的时候含糊地笑一笑。'},
+        {text:'第三天夜里，你们终于从一个老人的口中听说——'},
+        {text:'糖叶果的种子，还有人留着。就在村子最东边那间没有灯的屋子里。'},
+        {text:'克洛薇尔听完，猛地站了起来。'},
+        {who:'克洛薇尔', text:'……还在。'},
+        {who:'克洛薇尔', text:'它还在。'}
+      ]
+    },
+
+    end_c: {
+      type:'ending',
+      endingId:'e_summer',
+      lines:[
+        {text:'你们在那家小酒馆里坐了很久。'},
+        {text:'久到老板娘过来问要不要打烊，久到窗外的灯一盏一盏灭下去。'},
+        {text:'克洛薇尔一直没有哭。她只是安静地看着窗外，偶尔晃一下腿，像坐在那片巨大的四叶草叶子上一样。'},
+        {who:'克洛薇尔', text:'……喂。'},
+        {who:'克洛薇尔', text:'谢谢你没有说「没关系」。'},
+        {who:'克洛薇尔', text:'因为有关系。'},
+        {text:'她转过头，冲你笑了一下。那笑容有点勉强，但确实是笑。'},
+        {who:'克洛薇尔', text:'不过……夏天还长着呢。'}
+      ]
+    }
+
+  }
+};
+
+/* =========================================================
+   5. 状态管理
+   ========================================================= */
+let chapters = {};
+let state = blankState();
+let snapshots = [];
+let chat = { lines: [], idx: 0, topicId: null };
+let currentTab = 'story';
+let archiveSub = 'person';
+let openArchiveId = null;
+
+function blankState(){
+  return {
+    chapterId: null,
+    nodeId: null,
+    lineIdx: 0,
+    affection: 0,
+    flags: {},
+    completed: [],
+    endings: [],
+    archives: [],
+    tasks: [],
+    topics: [],
+    lastChapter: null
+  };
+}
+
+function saveState(){
+  try{ localStorage.setItem(LS_ST, JSON.stringify(state)); }catch(e){}
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_ST);
+    if(raw){
+      const o = JSON.parse(raw);
+      state = Object.assign(blankState(), o);
+      if(!Array.isArray(state.endings)) state.endings = [];
+      if(!Array.isArray(state.archives)) state.archives = [];
+      if(!Array.isArray(state.tasks)) state.tasks = [];
+      if(!Array.isArray(state.topics)) state.topics = [];
+      if(!Array.isArray(state.completed)) state.completed = [];
+    }
+  }catch(e){ state = blankState(); }
+}
+
+function saveChapters(){
+  try{ localStorage.setItem(LS_CH, JSON.stringify(chapters)); }catch(e){}
+}
+function loadChapters(){
+  chapters = {};
+  try{
+    const raw = localStorage.getItem(LS_CH);
+    if(raw){ chapters = JSON.parse(raw) || {}; }
+  }catch(e){ chapters = {}; }
+
+  const inited = localStorage.getItem(LS_INIT);
+  if(!inited){
+    chapters[BUILTIN_CH1.id] = JSON.parse(JSON.stringify(BUILTIN_CH1));
+    saveChapters();
+    localStorage.setItem(LS_INIT, '1');
+  } else if(Object.keys(chapters).length === 0){
+    // 用户清空过，保留空状态
+  }
+}
+
+function restoreBuiltin(){
+  chapters[BUILTIN_CH1.id] = JSON.parse(JSON.stringify(BUILTIN_CH1));
+  saveChapters();
+}
+
+function getChapter(id){ return chapters[id]; }
+
+function chapterList(){
+  return Object.values(chapters).sort((a,b)=>(a.order||0)-(b.order||0));
+}
+
+function isUnlocked(ch){
+  if(!ch) return false;
+  if(!ch.unlockAfter) return true;
+  return state.completed.includes(ch.unlockAfter);
+}
+
+/* =========================================================
+   6. 渲染入口
+   ========================================================= */
+function render(){
+  const view = document.getElementById('view');
+  document.getElementById('hud-aff').textContent = state.affection;
+
+  document.querySelectorAll('.navbtn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab === currentTab);
+  });
+
+  switch(currentTab){
+    case 'story':    renderStoryTab(view); break;
+    case 'interact': renderInteractTab(view); break;
+    case 'archive':  renderArchiveTab(view); break;
+    case 'ending':   renderEndingTab(view); break;
+    case 'workshop': renderWorkshopTab(view); break;
+  }
+}
+
+/* =========================================================
+   7. 剧情页
+   ========================================================= */
+function renderStoryTab(view){
+  if(state.chapterId && chapters[state.chapterId] && chapters[state.chapterId].nodes[state.nodeId]){
+    renderReader(view);
+  } else {
+    renderCatalog(view);
+  }
+}
+
+function renderCatalog(view){
+  const list = chapterList();
+  if(!list.length){
+    view.innerHTML =
+      '<div class="page-head"><h1>目录</h1><p>森野之谣 · 章节</p></div>' +
+      '<div class="empty"><span class="ei">🌱</span>还没有任何章节。<br>去「工坊」导入一段剧情代码吧。</div>';
+    return;
+  }
+  view.innerHTML =
+    '<div class="page-head"><h1>目录</h1><p>森野之谣 · 章节 · 共 ' + list.length + ' 章</p></div>' +
+    '<div class="chapter-list">' +
+    list.map(ch=>{
+      const unlocked = isUnlocked(ch);
+      const done = state.completed.includes(ch.id);
+      let badge;
+      if(!unlocked) badge = '🔒 未解锁';
+      else if(done) badge = '✓ 已完成';
+      else badge = '开始阅读';
+      return '<div class="chapter-card ' + (unlocked?'':'locked') + '" data-id="' + ch.id + '">' +
+        '<div class="ch-order">' + String(ch.order||0).padStart(2,'0') + '</div>' +
+        '<div class="ch-info"><h3>' + esc(ch.title||'未命名') + '</h3>' +
+        '<p>' + esc(ch.subtitle||'') + '</p></div>' +
+        '<div class="ch-badge">' + badge + '</div>' +
+      '</div>';
+    }).join('') +
+    '</div>';
+}
+
+function startChapter(id){
+  const ch = chapters[id];
+  if(!ch || !isUnlocked(ch)) return;
+  state.chapterId = id;
+  state.nodeId = null;
+  state.lineIdx = 0;
+  snapshots = [];
+  const startNode = ch.start && ch.nodes[ch.start] ? ch.start : Object.keys(ch.nodes)[0];
+  goToNode(startNode);
+}
+
+function renderReader(view){
+  const ch = chapters[state.chapterId];
+  const node = ch.nodes[state.nodeId];
+
+  view.innerHTML =
+    '<div class="reader" id="reader">' +
+      '<div class="reader-head">' +
+        '<button class="iconbtn" data-act="exit" title="返回目录">✕</button>' +
+        '<div class="rh-mid">' +
+          '<div class="rh-title">' + esc(ch.title) + '</div>' +
+          '<div class="rh-sub">' + esc(ch.subtitle||'') + '</div>' +
+        '</div>' +
+        '<button class="iconbtn" data-act="undo" title="回退到上一个选择">↺</button>' +
+      '</div>' +
+      '<div class="log" id="log"></div>' +
+      '<div class="choice-area" id="choice-area"></div>' +
+      '<div class="tap-hint" id="tap-hint"></div>' +
+    '</div>';
+
+  // 恢复已显示的行
+  const lines = (node.lines || []).slice(0, state.lineIdx);
+  const log = document.getElementById('log');
+  lines.forEach(ln => log.appendChild(makeLineEl(ln, false)));
+
+  if(node.type === 'choice'){
+    renderChoices(node);
+    document.getElementById('tap-hint').textContent = '';
+  } else {
+    if(state.lineIdx >= (node.lines||[]).length && state.lineIdx > 0){
+      onLinesDone(node);
+    } else {
+      document.getElementById('tap-hint').textContent = '轻触继续 ▾';
+    }
+  }
+  scrollDown();
+}
+
+function makeLineEl(line, animate){
+  const who = line.who || '';
+  let cls = 'line';
+  if(!who) cls += ' narr';
+  else if(who === '克洛薇尔') cls += ' clover';
+  else if(who === '你') cls += ' you';
+  else if(who === '赛拉菲娜') cls += ' sera';
+  else cls += ' other';
+  if(animate) cls += ' appear';
+
+  const d = document.createElement('div');
+  d.className = cls;
+  d.innerHTML = (who ? '<div class="who">' + esc(who) + '</div>' : '') +
+                '<div class="txt">' + esc(line.text) + '</div>';
+  return d;
+}
+
+function scrollDown(){
+  const v = document.getElementById('view');
+  if(v) v.scrollTop = v.scrollHeight + 400;
+}
+
+function renderChoices(node){
+  const area = document.getElementById('choice-area');
+  if(!area || node.type !== 'choice') return;
+  area.innerHTML =
+    '<div class="prompt">' + esc(node.prompt || '你会怎么做？') + '</div>' +
+    node.options.map((o,i)=>
+      '<button class="choice-btn" data-act="choice" data-i="' + i + '">' + esc(o.text) + '</button>'
+    ).join('');
+}
+
+function onLinesDone(node){
+  const area = document.getElementById('choice-area');
+  const hint = document.getElementById('tap-hint');
+  if(!area) return;
+
+  if(node.type === 'ending'){
+    if(area.dataset.done === '1') return;
+    area.dataset.done = '1';
+    if(node.endingId && !state.endings.includes(node.endingId)){
+      state.endings.push(node.endingId);
+      saveState();
+    }
+    const e = ENDING_DB[node.endingId] || { icon:'✦', title:'结局', desc:'' };
+    if(hint) hint.textContent = '';
+    area.innerHTML =
+      '<div class="ending-card">' +
+        '<div class="ec-tag">ENDING UNLOCKED</div>' +
+        '<div class="ec-title">' + esc(e.title) + '</div>' +
+        '<div class="ec-desc">' + esc(e.desc) + '</div>' +
+        '<button class="btn primary" data-act="finish">完成本章</button>' +
+        '<button class="btn ghost" data-act="finish-view">查看结局收集</button>' +
+      '</div>';
+  } else {
+    if(hint) hint.textContent = '轻触继续 ▾';
+  }
+}
+
+/* ---------- 节点跳转 ---------- */
+function goToNode(nodeId){
+  const ch = chapters[state.chapterId];
+  if(!ch) return;
+  const node = ch.nodes[nodeId];
+  if(!node){ toast('节点不存在：' + nodeId); return; }
+
+  // 选择节点前压入快照
+  if(node.type === 'choice'){
+    snapshots.push(JSON.stringify({
+      chapterId: state.chapterId,
+      nodeId: nodeId,
+      lineIdx: 0,
+      affection: state.affection,
+      flags: Object.assign({}, state.flags),
+      completed: state.completed.slice(),
+      endings: state.endings.slice(),
+      archives: state.archives.slice(),
+      tasks: JSON.parse(JSON.stringify(state.tasks))
+    }));
+    if(snapshots.length > 60) snapshots.shift();
+  }
+
+  state.nodeId = nodeId;
+  state.lineIdx = 0;
+  applyOnEnter(node);
+  const lines = node.lines || [];
+  if(lines.length > 0) state.lineIdx = 1;
+  saveState();
+  render();
+}
+
+function applyOnEnter(node){
+  const e = node.onEnter;
+  if(!e) return;
+  let changed = false;
+  (e.archive || []).forEach(id=>{
+    if(!state.archives.includes(id)){ state.archives.push(id); changed = true; }
+  });
+  (e.taskAdd || []).forEach(t=>{
+    if(!state.tasks.find(x=>x.id === t.id)){
+      state.tasks.push({ id:t.id, title:t.title, desc:t.desc, done:false });
+      changed = true;
+    }
+  });
+  (e.taskDone || []).forEach(id=>{
+    const t = state.tasks.find(x=>x.id === id);
+    if(t && !t.done){ t.done = true; changed = true; }
+  });
+  if(e.aff){ state.affection += e.aff; }
+  if(changed) saveState();
+}
+
+/* ---------- 推进 ---------- */
+function handleTap(){
+  const ch = chapters[state.chapterId];
+  if(!ch) return;
+  const node = ch.nodes[state.nodeId];
+  if(!node || node.type === 'choice') return;
+
+  const lines = node.lines || [];
+
+  if(state.lineIdx < lines.length){
+    const line = lines[state.lineIdx];
+    state.lineIdx++;
+    saveState();
+    const log = document.getElementById('log');
+    if(log) log.appendChild(makeLineEl(line, true));
+    scrollDown();
+    if(state.lineIdx >= lines.length) onLinesDone(node);
+    return;
+  }
+
+  if(node.type === 'ending') return;
+  if(node.next && ch.nodes[node.next]) goToNode(node.next);
+  else closeChapter();
+}
+
+function pickOption(node, i){
+  const o = node.options[i];
+  if(!o) return;
+  if(o.aff){
+    state.affection += o.aff;
+    const r = document.querySelector('.choice-btn[data-i="' + i + '"]');
+    if(r){
+      const rect = r.getBoundingClientRect();
+      floatNum('好感 +' + o.aff, rect.right - 30, rect.top + 10);
+    }
+  }
+  if(o.flag) state.flags[o.flag] = true;
+  saveState();
+  document.getElementById('hud-aff').textContent = state.affection;
+
+  if(o.next && chapters[state.chapterId].nodes[o.next]) goToNode(o.next);
+  else closeChapter();
+}
+
+function doUndo(){
+  if(!snapshots.length){ toast('已经回到本章最开始了'); return; }
+  const s = JSON.parse(snapshots.pop());
+  state.chapterId = s.chapterId;
+  state.nodeId = s.nodeId;
+  state.lineIdx = s.lineIdx;
+  state.affection = s.affection;
+  state.flags = s.flags;
+  state.completed = s.completed;
+  state.endings = s.endings;
+  state.archives = s.archives;
+  state.tasks = s.tasks;
+  saveState();
+  render();
+  toast('已回退到上一个选择');
+}
+
+function closeChapter(){
+  const ch = chapters[state.chapterId];
+  if(ch && !state.completed.includes(ch.id)) state.completed.push(ch.id);
+  if(ch) state.lastChapter = ch.id;
+  state.chapterId = null;
+  state.nodeId = null;
+  state.lineIdx = 0;
+  snapshots = [];
+  saveState();
+
+  // 检查是否有新章节解锁
+  const newly = chapterList().filter(c => isUnlocked(c) && !state.completed.includes(c.id) && c.id !== (ch && ch.id));
+  render();
+  if(newly.length){
+    toast('新章节已解锁：' + newly[0].title);
+  } else {
+    toast('本章完成');
+  }
+}
+
+/* =========================================================
+   8. 互动页
+   ========================================================= */
+function cloverMood(){
+  const a = state.affection;
+  if(a >= 14) return '心情：眼里有光';
+  if(a >= 9)  return '心情：愿意多说几句';
+  if(a >= 5)  return '心情：有点好奇';
+  if(a >= 1)  return '心情：慵懒';
+  return '心情：困';
+}
+
+function renderInteractTab(view){
+  view.innerHTML =
+    '<div class="page-head"><h1>与克洛薇尔</h1><p>森林深处 · 巨大的四叶草叶片上</p></div>' +
+    '<div class="stage">' +
+      '<div class="portrait">🍀</div>' +
+      '<div class="portrait-name">克 洛 薇 尔</div>' +
+      '<div class="portrait-mood">' + cloverMood() + '</div>' +
+    '</div>' +
+    '<div class="bubble-wrap" id="bubble-wrap"></div>' +
+    '<div class="topic-title">— 可以聊的话题 —</div>' +
+    '<div class="topic-grid" id="topic-grid"></div>';
+
+  renderChat();
+  renderTopics();
+}
+
+function renderChat(){
+  const wrap = document.getElementById('bubble-wrap');
+  if(!wrap) return;
+  if(!chat.lines.length){
+    wrap.innerHTML =
+      '<div class="bubble"><div class="b-who">克洛薇尔</div>' +
+      '……唔。<br>你又来了。<br>坐吧，叶子还有位置。</div>';
+    return;
+  }
+  const shown = chat.lines.slice(0, chat.idx);
+  wrap.innerHTML = shown.map(l=>{
+    const isMe = l.who === '你';
+    return '<div class="bubble' + (isMe?' me':'') + '">' +
+      '<div class="b-who">' + esc(l.who) + '</div>' + esc(l.text) + '</div>';
+  }).join('') +
+  (chat.idx < chat.lines.length
+    ? '<div class="bubble-hint">轻触气泡继续 ▾</div>'
+    : '<div class="bubble-hint">— 聊完了 —</div>');
+}
+
+function renderTopics(){
+  const grid = document.getElementById('topic-grid');
+  if(!grid) return;
+  grid.innerHTML = TOPICS.map(t=>{
+    const locked = state.affection < t.need;
+    const seen = state.topics.includes(t.id);
+    const tag = locked ? ('需好感 ' + t.need) : (seen ? '已聊过' : 'NEW');
+    return '<button class="topic-btn ' + (locked?'locked':'') + '" ' +
+      (locked ? 'disabled' : 'data-act="topic" data-id="' + t.id + '"') + '>' +
+      '<span class="tb-txt">' + esc(t.name) + '</span>' +
+      '<span class="tb-tag">' + tag + '</span>' +
+    '</button>';
+  }).join('');
+}
+
+function openTopic(id){
+  const t = TOPICS.find(x=>x.id === id);
+  if(!t) return;
+  if(state.affection < t.need){ toast('好感不足'); return; }
+
+  const first = !state.topics.includes(id);
+  if(first){
+    state.topics.push(id);
+    if(t.aff){
+      state.affection += t.aff;
+      document.getElementById('hud-aff').textContent = state.affection;
+    }
+    saveState();
+  }
+
+  chat = { lines: t.lines.slice(), idx: 1, topicId: id };
+  renderInteractTab(document.getElementById('view'));
+  const mood = document.querySelector('.portrait-mood');
+  if(mood) mood.textContent = cloverMood();
+  scrollDown();
+}
+
+function advanceChat(e){
+  if(!chat.lines.length) return;
+  if(chat.idx >= chat.lines.length) return;
+  chat.idx++;
+  renderChat();
+  scrollDown();
+}
+
+/* =========================================================
+   9. 档案页
+   ========================================================= */
+function renderArchiveTab(view){
+  const subs = [
+    {k:'person', n:'人物'},
+    {k:'setting', n:'设定'},
+    {k:'world', n:'世界观'},
+    {k:'task', n:'任务'}
+  ];
+  let bodyHtml = '';
+
+  if(archiveSub === 'task'){
+    if(!state.tasks.length){
+      bodyHtml = '<div class="empty"><span class="ei">📜</span>还没有接到任何任务。</div>';
+    } else {
+      bodyHtml = state.tasks.map(t=>
+        '<div class="task-item ' + (t.done?'done':'') + '">' +
+          '<div class="task-check">' + (t.done?'✓':'') + '</div>' +
+          '<div class="task-txt"><h4>' + esc(t.title) + '</h4>' +
+          '<p>' + esc(t.desc||'') + '</p></div>' +
+        '</div>'
+      ).join('');
+    }
+  } else {
+    const items = Object.keys(ARCHIVE_DB).filter(k => ARCHIVE_DB[k].type === archiveSub);
+    bodyHtml = items.map(k=>{
+      const a = ARCHIVE_DB[k];
+      const unlocked = state.archives.includes(k);
+      const open = openArchiveId === k;
+      return '<div class="archive-item ' + (unlocked?'':'locked') + (open?' open':'') + '" ' +
+        (unlocked ? 'data-act="arch" data-id="' + k + '"' : '') + '>' +
+        '<div class="ai-head">' +
+          '<div class="ai-avatar">' + (unlocked ? a.icon : '🔒') + '</div>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<div class="ai-name">' + (unlocked ? esc(a.name) : '？？？') + '</div>' +
+            '<div class="ai-sub">' + (unlocked ? esc(a.sub||'') : '尚未解锁') + '</div>' +
+          '</div>' +
+          '<div class="ai-arrow">▶</div>' +
+        '</div>' +
+        (open && unlocked ? '<div class="ai-body">' + esc(a.body) + '</div>' : '') +
+      '</div>';
+    }).join('');
+    if(!items.length) bodyHtml = '<div class="empty">暂无内容</div>';
+  }
+
+  const total = Object.keys(ARCHIVE_DB).length;
+  const got = state.archives.length;
+
+  view.innerHTML =
+    '<div class="page-head"><h1>档案</h1><p>已收集 ' + got + ' / ' + total + '</p></div>' +
+    '<div class="subtabs">' +
+      subs.map(s=>'<button class="subtab ' + (archiveSub===s.k?'active':'') + '" data-act="sub" data-k="' + s.k + '">' + s.n + '</button>').join('') +
+    '</div>' +
+    bodyHtml;
+}
+
+/* =========================================================
+   10. 结局页
+   ========================================================= */
+function renderEndingTab(view){
+  const keys = Object.keys(ENDING_DB);
+  const got = keys.filter(k => state.endings.includes(k)).length;
+  const pct = keys.length ? Math.round(got / keys.length * 100) : 0;
+
+  view.innerHTML =
+    '<div class="page-head"><h1>结局收集</h1><p>每一次选择，都会通向不同的夏天</p></div>' +
+    '<div class="progress-ring">' +
+      '<div class="pr-num">' + got + '<small> / ' + keys.length + '</small></div>' +
+      '<div class="pr-bar"><i style="width:' + pct + '%"></i></div>' +
+    '</div>' +
+    keys.map(k=>{
+      const e = ENDING_DB[k];
+      const has = state.endings.includes(k);
+      return '<div class="ending-item ' + (has?'got':'lock') + '">' +
+        '<div class="ee-icon">' + (has ? e.icon : '❔') + '</div>' +
+        '<div class="ee-info">' +
+          '<h4>' + (has ? esc(e.title) : '？？？') + '</h4>' +
+          '<p>' + (has ? esc(e.desc) : '尚未解锁') + '</p>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+/* =========================================================
+   11. 工坊页
+   ========================================================= */
+function renderWorkshopTab(view){
+  const list = chapterList();
+  view.innerHTML =
+    '<div class="page-head"><h1>剧情工坊</h1><p>导入章节代码 · 覆盖更新 · 永久保存在本机</p></div>' +
+
+    '<div class="workshop-box">' +
+      '<h3>📥 导入章节</h3>' +
+      '<p class="hint">粘贴一段章节代码（JSON 或 JS 对象字面量均可）。<br>' +
+      '如果章节 <b>id 已存在</b>，会自动<b>覆盖</b>旧版本——用来修改已发布的章节。<br>' +
+      '支持一次粘贴<b>数组</b>批量导入多个章节。</p>' +
+      '<textarea id="ws-input" placeholder=\'{\n  "id": "ch2",\n  "order": 2,\n  "title": "一序 · 章二",\n  "subtitle": "……",\n  "unlockAfter": "ch1",\n  "start": "start",\n  "nodes": {\n    "start": {\n      "type": "scene",\n      "lines": [{"text": "……"}],\n      "next": "n2"\n    }\n  }\n}\'></textarea>' +
+      '<div class="btn-row">' +
+        '<button class="btn primary" data-act="import">校验并导入</button>' +
+        '<button class="btn" data-act="tpl">载入模板</button>' +
+        '<button class="btn" data-act="clear">清空输入框</button>' +
+      '</div>' +
+      '<div class="log-box" id="ws-log"></div>' +
+    '</div>' +
+
+    '<div class="workshop-box">' +
+      '<h3>📚 已安装章节（' + list.length + '）</h3>' +
+      '<p class="hint">点击 ✕ 可以删除某个章节。</p>' +
+      '<div class="chip-list">' +
+        (list.length ? list.map(c=>
+          '<span class="chip">' + esc(c.title) +
+          '<button data-act="del" data-id="' + c.id + '" title="删除">✕</button></span>'
+        ).join('') : '<span style="font-size:12.5px;color:#a7bda9;">暂无章节</span>') +
+      '</div>' +
+      '<div class="btn-row">' +
+        '<button class="btn" data-act="export">导出全部章节</button>' +
+        '<button class="btn" data-act="copy">复制到剪贴板</button>' +
+        '<button class="btn" data-act="restore">恢复内置章节</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="workshop-box">' +
+      '<h3>⚙ 数据管理</h3>' +
+      '<p class="hint">所有进度保存在本机浏览器中，退出重进不会丢失。</p>' +
+      '<div class="btn-row">' +
+        '<button class="btn" data-act="export-save">导出存档</button>' +
+        '<button class="btn" data-act="import-save">导入存档</button>' +
+        '<button class="btn danger" data-act="reset">重置全部数据</button>' +
+      '</div>' +
+    '</div>' +
+
+    '<div class="workshop-box">' +
+      '<h3>📖 节点格式速查</h3>' +
+      '<p class="hint">' +
+      '· <b>scene</b>：台词按 <code>lines</code> 顺序逐个弹出，点完走 <code>next</code>。<br>' +
+      '· <b>choice</b>：<code>options</code> 里每个选项有 <code>text / next / aff(好感) / flag</code>。<br>' +
+      '· <b>ending</b>：<code>endingId</code> 对应结局收集表里的 id。<br>' +
+      '· 台词行：<code>{"who": "克洛薇尔", "text": "..."}</code>，省略 who 即为旁白。<br>' +
+      '· <code>onEnter</code>：<code>{ archive:["p_clover"], taskAdd:[{id,title,desc}], taskDone:["t1"], aff:1 }</code>' +
+      '</p>' +
+    '</div>';
+}
+
+function wsLog(msg, cls){
+  const box = document.getElementById('ws-log');
+  if(!box) return;
+  const line = document.createElement('div');
+  if(cls) line.className = cls;
+  line.textContent = msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+function parseChapterCode(code){
+  let c = code.trim();
+  c = c.replace(/^```[a-zA-Z]*\s*/, '').replace(/```\s*$/, '').trim();
+  try{ return JSON.parse(c); }catch(e){}
+  try{
+    return (new Function('return (' + c + ');'))();
+  }catch(e){
+    throw new Error('代码解析失败：' + e.message);
+  }
+}
+
+function validateChapter(ch, idx){
+  const errs = [];
+  const tag = '第' + (idx+1) + '段';
+  if(!ch || typeof ch !== 'object' || Array.isArray(ch)) { errs.push(tag + '：不是有效的章节对象'); return errs; }
+  if(!ch.id) errs.push(tag + '：缺少 id');
+  if(!ch.title) errs.push(tag + '：缺少 title');
+  if(!ch.nodes || typeof ch.nodes !== 'object') { errs.push(tag + '：缺少 nodes'); return errs; }
+  Object.keys(ch.nodes).forEach(k=>{
+    const n = ch.nodes[k];
+    if(!n || typeof n !== 'object'){ errs.push(tag + ' 节点 ' + k + '：格式错误'); return; }
+    if(!n.type) errs.push(tag + ' 节点 ' + k + '：缺少 type');
+    if(n.type === 'choice' && !Array.isArray(n.options)) errs.push(tag + ' 节点 ' + k + '：choice 缺少 options 数组');
+    if(n.type === 'ending' && !n.endingId) errs.push(tag + ' 节点 ' + k + '：ending 缺少 endingId');
+    if(n.lines && !Array.isArray(n.lines)) errs.push(tag + ' 节点 ' + k + '：lines 必须是数组');
+    if(n.next && !ch.nodes[n.next]) errs.push(tag + ' 节点 ' + k + '：next 指向不存在的节点 "' + n.next + '"');
+    if(Array.isArray(n.options)){
+      n.options.forEach((o,i)=>{
+        if(!o.text) errs.push(tag + ' 节点 ' + k + ' 选项' + i + '：缺少 text');
+        if(o.next && !ch.nodes[o.next]) errs.push(tag + ' 节点 ' + k + ' 选项' + i + '：next 指向不存在的节点');
+      });
+    }
+  });
+  return errs;
+}
+
+function doImport(){
+  const ta = document.getElementById('ws-input');
+  const logBox = document.getElementById('ws-log');
+  if(logBox) logBox.innerHTML = '';
+  if(!ta || !ta.value.trim()){ toast('请先粘贴章节代码'); return; }
+
+  let data;
+  try{
+    data = parseChapterCode(ta.value);
+  }catch(e){
+    wsLog('✕ ' + e.message, 'err');
+    toast('解析失败');
+    return;
+  }
+
+  const arr = Array.isArray(data) ? data : [data];
+  const allErrs = [];
+  arr.forEach((c,i)=>{ allErrs.push.apply(allErrs, validateChapter(c, i)); });
+
+  if(allErrs.length){
+    allErrs.forEach(e => wsLog('✕ ' + e, 'err'));
+    toast('校验未通过，共 ' + allErrs.length + ' 个问题');
+    return;
+  }
+
+  let created = 0, overwritten = 0;
+  arr.forEach(c=>{
+    if(!c.start || !c.nodes[c.start]){
+      c.start = Object.keys(c.nodes)[0];
+    }
+    c.order = (typeof c.order === 'number') ? c.order : (chapterList().length + 1);
+    if(chapters[c.id]) overwritten++; else created++;
+    chapters[c.id] = JSON.parse(JSON.stringify(c));
+  });
+  saveChapters();
+
+  wsLog('✓ 导入成功：新增 ' + created + ' 章，覆盖 ' + overwritten + ' 章', 'ok');
+  arr.forEach(c => wsLog('   · [' + c.id + '] ' + c.title, 'ok'));
+
+  toast('导入成功');
+  render();
+}
+
+const TEMPLATE_CHAPTER =
+`{
+  "id": "ch2",
+  "order": 2,
+  "title": "一序 · 章二",
+  "subtitle": "尚未命名的秋天",
+  "unlockAfter": "ch1",
+  "start": "start",
+  "nodes": {
+    "start": {
+      "type": "scene",
+      "onEnter": {
+        "taskAdd": [{ "id": "t7", "title": "新的旅程", "desc": "秋天来了。" }]
+      },
+      "lines": [
+        { "text": "森林的风变了方向。" },
+        { "who": "克洛薇尔", "text": "唔……你听。" },
+        { "who": "克洛薇尔", "text": "叶子在说话。它们说，秋天到了。" }
+      ],
+      "next": "ask"
+    },
+    "ask": {
+      "type": "choice",
+      "prompt": "你要说什么？",
+      "options": [
+        { "text": "「那我们该做点什么？」", "next": "a", "aff": 2 },
+        { "text": "「秋天……在这里是什么样的？」", "next": "b", "aff": 1 },
+        { "text": "（安静地听叶子说话。）", "next": "c", "aff": 1 }
+      ]
+    },
+    "a": {
+      "type": "scene",
+      "lines": [
+        { "who": "克洛薇尔", "text": "该做点什么？" },
+        { "who": "克洛薇尔", "text": "……你这个人，怎么比我这个守护使还上心。" }
+      ],
+      "next": "final"
+    },
+    "b": {
+      "type": "scene",
+      "lines": [
+        { "who": "克洛薇尔", "text": "很漂亮。也很短。" },
+        { "who": "克洛薇尔", "text": "短到我一觉醒来，就只剩下光秃秃的树枝了。" }
+      ],
+      "next": "final"
+    },
+    "c": {
+      "type": "scene",
+      "lines": [
+        { "text": "你没有说话。" },
+        { "text": "风穿过林梢，发出很轻很轻的沙沙声。" },
+        { "who": "克洛薇尔", "text": "……嗯。这样也好。" }
+      ],
+      "next": "final"
+    },
+    "final": {
+      "type": "ending",
+      "endingId": "e_summer",
+      "lines": [
+        { "text": "那个秋天，森林里发生了很多事情。" },
+        { "text": "但那是另一个故事了。" }
+      ]
+    }
+  }
+}`;
+
+/* =========================================================
+   12. 事件绑定
+   ========================================================= */
+const view = document.getElementById('view');
+
+view.addEventListener('click', function(e){
+  const btn = e.target.closest('button');
+
+  if(btn){
+    const act = btn.dataset.act;
+    if(!act) return;
+
+    if(act === 'exit'){
+      state.chapterId = null; state.nodeId = null; state.lineIdx = 0;
+      snapshots = []; saveState(); render(); return;
+    }
+    if(act === 'undo'){ doUndo(); return; }
+    if(act === 'choice'){
+      const ch = chapters[state.chapterId];
+      const node = ch.nodes[state.nodeId];
+      pickOption(node, parseInt(btn.dataset.i, 10));
+      return;
+    }
+    if(act === 'finish'){ closeChapter(); return; }
+    if(act === 'finish-view'){ closeChapter(); currentTab = 'ending'; render(); return; }
+
+    if(act === 'topic'){ openTopic(btn.dataset.id); return; }
+
+    if(act === 'sub'){ archiveSub = btn.dataset.k; openArchiveId = null; render(); return; }
+    if(act === 'arch'){
+      const id = btn.dataset.id;
+      openArchiveId = (openArchiveId === id) ? null : id;
+      render(); return;
+    }
+
+    if(act === 'import'){ doImport(); return; }
+    if(act === 'tpl'){
+      const ta = document.getElementById('ws-input');
+      if(ta) ta.value = TEMPLATE_CHAPTER;
+      return;
+    }
+    if(act === 'clear'){
+      const ta = document.getElementById('ws-input');
+      if(ta) ta.value = '';
+      const lg = document.getElementById('ws-log');
+      if(lg) lg.innerHTML = '';
+      return;
+    }
+    if(act === 'del'){
+      const id = btn.dataset.id;
+      const c = chapters[id];
+      modal('删除章节', '确定要删除「' + (c ? c.title : id) + '」吗？\n此操作无法撤销。', [
+        { text:'取消' },
+        { text:'删除', cls:'danger', fn(){
+          delete chapters[id];
+          saveChapters();
+          render();
+          toast('已删除');
+        }}
+      ]);
+      return;
+    }
+    if(act === 'export' || act === 'copy'){
+      const data = JSON.stringify(chapterList(), null, 2);
+      const ta = document.getElementById('ws-input');
+      if(ta) ta.value = data;
+      if(act === 'copy'){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(data).then(
+            ()=>toast('已复制到剪贴板'),
+            ()=>toast('复制失败，请手动复制')
+          );
+        } else {
+          ta.select();
+          try{ document.execCommand('copy'); toast('已复制'); }catch(err){ toast('复制失败'); }
+        }
+      } else {
+        toast('已导出到输入框');
+      }
+      return;
+    }
+    if(act === 'restore'){
+      modal('恢复内置章节', '将重新写入内置的「一序 · 章一」。\n如果你导入过同名章节，它会被覆盖。', [
+        { text:'取消' },
+        { text:'恢复', cls:'primary', fn(){
+          restoreBuiltin();
+          render();
+          toast('内置章节已恢复');
+        }}
+      ]);
+      return;
+    }
+    if(act === 'export-save'){
+      const bundle = {
+        version: 1,
+        chapters: chapters,
+        state: state
+      };
+      const ta = document.getElementById('ws-input');
+      if(ta) ta.value = JSON.stringify(bundle, null, 2);
+      toast('存档已导出到输入框');
+      return;
+    }
+    if(act === 'import-save'){
+      const ta = document.getElementById('ws-input');
+      if(!ta || !ta.value.trim()){ toast('请先粘贴存档代码'); return; }
+      try{
+        const b = parseChapterCode(ta.value);
+        if(b.chapters) { chapters = b.chapters; saveChapters(); }
+        if(b.state){
+          state = Object.assign(blankState(), b.state);
+          saveState();
+        }
+        render();
+        toast('存档已导入');
+      }catch(err){
+        toast('存档解析失败');
+      }
+      return;
+    }
+    if(act === 'reset'){
+      modal('重置全部数据', '将会清空所有章节、进度、好感度与结局收集。\n此操作无法撤销。', [
+        { text:'取消' },
+        { text:'确认重置', cls:'danger', fn(){
+          localStorage.removeItem(LS_ST);
+          localStorage.removeItem(LS_CH);
+          localStorage.removeItem(LS_INIT);
+          state = blankState();
+          chapters = {};
+          snapshots = [];
+          chat = { lines: [], idx: 0, topicId: null };
+          loadChapters();
+          render();
+          toast('已重置');
+        }}
+      ]);
+      return;
+    }
+    return;
+  }
+
+  // 阅读区空白点击 -> 推进
+  if(e.target.closest('#reader')){ handleTap(); return; }
+  // 互动气泡点击 -> 推进
+  if(e.target.closest('#bubble-wrap')){ advanceChat(); return; }
+});
+
+/* 底部导航 */
+document.querySelector('.bottomnav').addEventListener('click', function(e){
+  const btn = e.target.closest('.navbtn');
+  if(!btn) return;
+  currentTab = btn.dataset.tab;
+  openArchiveId = null;
+  render();
+  const v = document.getElementById('view');
+  if(v) v.scrollTop = 0;
+});
+
+/* 键盘：空格/回车推进 */
+document.addEventListener('keydown', function(e){
+  if(e.key === ' ' || e.key === 'Enter'){
+    const tag = document.activeElement && document.activeElement.tagName;
+    if(tag === 'TEXTAREA' || tag === 'INPUT') return;
+    if(currentTab === 'story' && state.chapterId) { e.preventDefault(); handleTap(); }
+    else if(currentTab === 'interact') { e.preventDefault(); advanceChat(); }
+  }
+  if(e.key === 'Backspace' && currentTab === 'story' && state.chapterId){
+    e.preventDefault(); doUndo();
+  }
+});
+
+/* =========================================================
+   13. 启动
+   ========================================================= */
+function boot(){
+  loadChapters();
+  loadState();
+  render();
+}
+
+boot();
+</script>
+</body>
+</html>
