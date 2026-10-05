@@ -531,7 +531,6 @@ textarea:focus{border-color:var(--green-l);background:#fff;box-shadow:0 0 0 3px 
    ========================================================= */
 const LS_CH = 'smy.chapters.v1';
 const LS_ST = 'smy.state.v1';
-const LS_INIT = 'smy.inited.v1';
 
 const esc = s => String(s == null ? '' : s)
   .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -580,7 +579,6 @@ function modal(title, body, buttons){
    1. 档案数据库
    ========================================================= */
 const ARCHIVE_DB = {
-  /* ---- 人物 ---- */
   p_clover: {
     type:'person', icon:'🍀', name:'克洛薇尔', sub:'Clover · 四叶草的物灵',
     body:'这片远古森林中唯一的物灵，人形，本体是一株再普通不过的四叶草。\n' +
@@ -609,7 +607,6 @@ const ARCHIVE_DB = {
          '她告诉克洛薇尔：糖叶果，十几年前就绝了。\n' +
          '「这片地，早就种不出东西了。」'
   },
-  /* ---- 设定 ---- */
   s_wuling: {
     type:'setting', icon:'✧', name:'物灵', sub:'千年的约定',
     body:'在这片大陆上，千年来总要出一个物灵。\n\n' +
@@ -641,7 +638,6 @@ const ARCHIVE_DB = {
          '而对村子而言，那已经是足以让一代人老去、让一座凉亭消失、让一尊石像被拆除的漫长岁月。\n\n' +
          '这是物灵最温柔，也最残酷的地方。'
   },
-  /* ---- 世界观 ---- */
   w_continent: {
     type:'world', icon:'🌍', name:'这片大陆', sub:'广袤而沉默',
     body:'一片广袤的大陆。人类的聚落沿着河流与平原生长，而森林、山脉、沼泽则属于别的存在。\n\n' +
@@ -756,7 +752,6 @@ const BUILTIN_CH1 = {
   start: 'start',
   nodes: {
 
-    /* ---------- 开场 ---------- */
     start: {
       type:'scene',
       onEnter:{ archive:['w_forest','w_continent','p_you'],
@@ -771,7 +766,6 @@ const BUILTIN_CH1 = {
       next:'meet'
     },
 
-    /* ---------- 初遇 ---------- */
     meet: {
       type:'scene',
       onEnter:{ archive:['p_clover'], taskDone:['t1'],
@@ -847,7 +841,6 @@ const BUILTIN_CH1 = {
       next:'sera'
     },
 
-    /* ---------- 赛拉菲娜登场 ---------- */
     sera: {
       type:'scene',
       onEnter:{ archive:['p_sera','s_sugarleaf'],
@@ -926,7 +919,6 @@ const BUILTIN_CH1 = {
       next:'depart'
     },
 
-    /* ---------- 出发 ---------- */
     depart: {
       type:'scene',
       onEnter:{ taskDone:['t3'],
@@ -943,7 +935,6 @@ const BUILTIN_CH1 = {
       next:'village_edge'
     },
 
-    /* ---------- 村落 ---------- */
     village_edge: {
       type:'scene',
       onEnter:{ archive:['w_village'],
@@ -1020,7 +1011,6 @@ const BUILTIN_CH1 = {
       next:'tavern'
     },
 
-    /* ---------- 酒馆 ---------- */
     tavern: {
       type:'scene',
       onEnter:{ archive:['p_villager'],
@@ -1067,7 +1057,6 @@ const BUILTIN_CH1 = {
       ]
     },
 
-    /* ---------- 三条支线 ---------- */
     route_a: {
       type:'scene',
       lines:[
@@ -1110,7 +1099,6 @@ const BUILTIN_CH1 = {
       next:'end_c'
     },
 
-    /* ---------- 结局 ---------- */
     end_a: {
       type:'ending',
       endingId:'e_unspoken',
@@ -1209,16 +1197,18 @@ function loadChapters(){
   chapters = {};
   try{
     const raw = localStorage.getItem(LS_CH);
-    if(raw){ chapters = JSON.parse(raw) || {}; }
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(parsed && typeof parsed === 'object' && !Array.isArray(parsed)){
+        chapters = parsed;
+      }
+    }
   }catch(e){ chapters = {}; }
 
-  const inited = localStorage.getItem(LS_INIT);
-  if(!inited){
+  // 只要内置章节不存在，就自动补上。避免旧数据把主线吞掉。
+  if(!chapters[BUILTIN_CH1.id]){
     chapters[BUILTIN_CH1.id] = JSON.parse(JSON.stringify(BUILTIN_CH1));
     saveChapters();
-    localStorage.setItem(LS_INIT, '1');
-  } else if(Object.keys(chapters).length === 0){
-    // 用户清空过，保留空状态
   }
 }
 
@@ -1226,8 +1216,6 @@ function restoreBuiltin(){
   chapters[BUILTIN_CH1.id] = JSON.parse(JSON.stringify(BUILTIN_CH1));
   saveChapters();
 }
-
-function getChapter(id){ return chapters[id]; }
 
 function chapterList(){
   return Object.values(chapters).sort((a,b)=>(a.order||0)-(b.order||0));
@@ -1305,7 +1293,7 @@ function startChapter(id){
   state.nodeId = null;
   state.lineIdx = 0;
   snapshots = [];
-  const startNode = ch.start && ch.nodes[ch.start] ? ch.start : Object.keys(ch.nodes)[0];
+  const startNode = (ch.start && ch.nodes[ch.start]) ? ch.start : Object.keys(ch.nodes)[0];
   goToNode(startNode);
 }
 
@@ -1328,19 +1316,20 @@ function renderReader(view){
       '<div class="tap-hint" id="tap-hint"></div>' +
     '</div>';
 
-  // 恢复已显示的行
   const lines = (node.lines || []).slice(0, state.lineIdx);
   const log = document.getElementById('log');
   lines.forEach(ln => log.appendChild(makeLineEl(ln, false)));
 
   if(node.type === 'choice'){
     renderChoices(node);
-    document.getElementById('tap-hint').textContent = '';
+    const h = document.getElementById('tap-hint');
+    if(h) h.textContent = '';
   } else {
     if(state.lineIdx >= (node.lines||[]).length && state.lineIdx > 0){
       onLinesDone(node);
     } else {
-      document.getElementById('tap-hint').textContent = '轻触继续 ▾';
+      const h = document.getElementById('tap-hint');
+      if(h) h.textContent = '轻触继续 ▾';
     }
   }
   scrollDown();
@@ -1405,14 +1394,12 @@ function onLinesDone(node){
   }
 }
 
-/* ---------- 节点跳转 ---------- */
 function goToNode(nodeId){
   const ch = chapters[state.chapterId];
   if(!ch) return;
   const node = ch.nodes[nodeId];
   if(!node){ toast('节点不存在：' + nodeId); return; }
 
-  // 选择节点前压入快照
   if(node.type === 'choice'){
     snapshots.push(JSON.stringify({
       chapterId: state.chapterId,
@@ -1458,7 +1445,6 @@ function applyOnEnter(node){
   if(changed) saveState();
 }
 
-/* ---------- 推进 ---------- */
 function handleTap(){
   const ch = chapters[state.chapterId];
   if(!ch) return;
@@ -1529,7 +1515,6 @@ function closeChapter(){
   snapshots = [];
   saveState();
 
-  // 检查是否有新章节解锁
   const newly = chapterList().filter(c => isUnlocked(c) && !state.completed.includes(c.id) && c.id !== (ch && ch.id));
   render();
   if(newly.length){
@@ -1624,7 +1609,7 @@ function openTopic(id){
   scrollDown();
 }
 
-function advanceChat(e){
+function advanceChat(){
   if(!chat.lines.length) return;
   if(chat.idx >= chat.lines.length) return;
   chat.idx++;
@@ -2066,7 +2051,6 @@ view.addEventListener('click', function(e){
         { text:'确认重置', cls:'danger', fn(){
           localStorage.removeItem(LS_ST);
           localStorage.removeItem(LS_CH);
-          localStorage.removeItem(LS_INIT);
           state = blankState();
           chapters = {};
           snapshots = [];
@@ -2122,5 +2106,6 @@ function boot(){
 }
 
 boot();
+</script>
 </body>
 </html>
