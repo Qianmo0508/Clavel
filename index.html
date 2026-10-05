@@ -2071,7 +2071,19 @@ view.addEventListener('click', function(e){
     }
     return;
   }
-
+  
+  // 目录卡片点击 -> 开始章节
+  const card = e.target.closest('.chapter-card');
+  if(card){
+    const id = card.dataset.id;
+    if(id && chapters[id] && isUnlocked(chapters[id])){
+      startChapter(id);
+    } else {
+      toast('该章节尚未解锁');
+    }
+    return;
+  }
+  
   // 阅读区空白点击 -> 推进
   if(e.target.closest('#reader')){ handleTap(); return; }
   // 互动气泡点击 -> 推进
