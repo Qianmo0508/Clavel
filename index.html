@@ -1937,8 +1937,21 @@ const TEMPLATE_CHAPTER =
 const view = document.getElementById('view');
 
 view.addEventListener('click', function(e){
-  const btn = e.target.closest('button');
 
+  // ---------- 1. 目录卡片：点击开始章节 ----------
+  const card = e.target.closest('.chapter-card');
+  if(card){
+    const id = card.dataset.id;
+    if(id && chapters[id] && isUnlocked(chapters[id])){
+      startChapter(id);
+    } else {
+      toast('该章节尚未解锁');
+    }
+    return;
+  }
+
+  // ---------- 2. 所有带 data-act 的按钮 ----------
+  const btn = e.target.closest('button');
   if(btn){
     const act = btn.dataset.act;
     if(!act) return;
@@ -2024,11 +2037,7 @@ view.addEventListener('click', function(e){
       return;
     }
     if(act === 'export-save'){
-      const bundle = {
-        version: 1,
-        chapters: chapters,
-        state: state
-      };
+      const bundle = { version: 1, chapters: chapters, state: state };
       const ta = document.getElementById('ws-input');
       if(ta) ta.value = JSON.stringify(bundle, null, 2);
       toast('存档已导出到输入框');
@@ -2071,22 +2080,11 @@ view.addEventListener('click', function(e){
     }
     return;
   }
-  
-  // 目录卡片点击 -> 开始章节
-  const card = e.target.closest('.chapter-card');
-  if(card){
-    const id = card.dataset.id;
-    if(id && chapters[id] && isUnlocked(chapters[id])){
-      startChapter(id);
-    } else {
-      toast('该章节尚未解锁');
-    }
-    return;
-  }
-  
-  // 阅读区空白点击 -> 推进
+
+  // ---------- 3. 阅读区空白点击：推进剧情 ----------
   if(e.target.closest('#reader')){ handleTap(); return; }
-  // 互动气泡点击 -> 推进
+
+  // ---------- 4. 互动区气泡点击：推进对话 ----------
   if(e.target.closest('#bubble-wrap')){ advanceChat(); return; }
 });
 
@@ -2124,6 +2122,5 @@ function boot(){
 }
 
 boot();
-</script>
 </body>
 </html>
